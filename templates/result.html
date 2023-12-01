@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情感分析结果</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <img src="../static/white_logo.png" alt="Logo" class="logo">
+    <div class="container result">
+        <h1>情感分析结果</h1>
+        <br>
+        <!-- 添加显示结果的内容，可以根据具体需要进行修改 -->
+        <p style="font-size: 20px">{{ result }}</p>
+        <div style="display: inline-block">
+            {% if feedback_supported %}
+                <!-- 错误反馈按钮 -->
+                <form method="post" class="feedback_text" id="feedback-form">
+                    <input type="hidden" name="text" value="{{ text }}">
+                    <input type="hidden" name="label" value="{{ label }}">
+                    <button type="submit" id="feedback_button">错误反馈</button>
+                </form>
+            {% else %}
+                <form class="feedback_file">
+                    <div id="feedback_false">
+                        暂不支持文件反馈
+                    </div>
+                </form>
+            {% endif %}
+
+            <a href="/">返回</a>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+            var feedbackForm = document.getElementById('feedback-form');
+
+            feedbackForm.addEventListener('submit', async function (event) {
+                event.preventDefault(); // 阻止默认的表单提交行为
+                var text = document.querySelector('[name="text"]').value;
+                var label = document.querySelector('[name="label"]').value;
+
+                try {
+                    // 发送异步请求到/feedback端点
+                    var response = await fetch('/feedback', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'text=' + encodeURIComponent(text) + '&label=' + encodeURIComponent(label),
+                    });
+
+                    if (response.ok) {
+                        var data = await response.json();
+                        console.log('Feedback success:', data);
+                        // 这里可以添加其他处理逻辑，例如更新页面内容
+                    } else {
+                        console.error('Feedback request failed:', response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Error during feedback:', error);
+                }
+            });
+        });
+    </script>
+
+        <!-- 反馈成功的模态框 -->
+        <div id="feedback-modal" class="modal">
+            <div class="modal-content">
+                <p>反馈成功，感谢您的反馈</p>
+                <button id="submit-btn">确认</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

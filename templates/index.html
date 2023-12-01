@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情感分析</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+
+</head>
+<body>
+
+    <img src="../static/white_logo.png" alt="Logo" class="logo">
+
+    <div class="container">
+        <div class="error">{{ error }}</div>
+
+    <form action="/predict" method="post" enctype="multipart/form-data">
+        <h2>输入文本或选择文件进行情感预测</h2>
+        <label for="input_text">输入文本：</label>
+        <textarea name="input_text" id="input_text" rows="4" cols="50"></textarea><br>
+        <label for="fileInput">上传文件(支持.txt/.csv文件)：</label>
+        <input type="file" name="file" id="fileInput" accept=".txt, .csv">
+        <br>
+        <!-- 添加重新训练模型按钮，注意修改 type 为 button，以防止触发表单提交 -->
+        <button type="button" id="train-btn">重新训练模型</button>
+        <input type="submit" id="predict-btn" value="预测">
+
+    </form>
+
+        <script>
+            // 等待页面加载完成后执行
+            document.addEventListener('DOMContentLoaded', function () {
+                // 获取按钮元素
+                var trainBtn = document.getElementById('train-btn');
+
+                // 添加按钮点击事件监听器
+                trainBtn.addEventListener('click', function () {
+                    // 发送异步请求到/train端点
+                    fetch('/train', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 在这里处理成功响应的情况，不需要进行页面跳转
+                        console.log('Training success:', data);
+                    })
+                    {#.catch(error => {#}
+                    {#    // 在这里处理请求失败的情况#}
+                    {#    console.error('Error during training:', error);#}
+                    {# }); #}
+                });
+            });
+        </script>
+
+
+        <!-- 加载中的模态框 -->
+        <div id="loading-modal" class="modal">
+            <div class="modal-content">
+                <p>模型正在训练...</p>
+            </div>
+        </div>
+
+        <!-- 训练成功的模态框 -->
+        <div id="success-modal" class="modal">
+            <div class="modal-content">
+                <p>重新训练模型成功</p>
+                <button id="confirm-btn">确认</button>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
+
